@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     # 3rd-party
     'rest_framework',
 'rest_framework_simplejwt',
+'django_filters',
 
     # local apps
     'common',
@@ -116,7 +117,6 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -124,8 +124,12 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ),
 }
-
 # Email (development uchun konsolga chiqaradi)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 from datetime import timedelta

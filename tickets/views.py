@@ -1,6 +1,6 @@
 from django.utils import timezone
 from rest_framework import permissions, viewsets
-
+from .filters import TicketFilter
 from common.permissions import (
     IsAdminOrAssignedOperator,
     IsAdminOrReadOnly,
@@ -65,3 +65,18 @@ class TicketViewSet(viewsets.ModelViewSet):
             if ticket.status == Ticket.Status.RESOLVED and not ticket.resolved_at:
                 ticket.resolved_at = timezone.now()
                 ticket.save(update_fields=['resolved_at'])
+
+
+class TicketViewSet(viewsets.ModelViewSet):
+    serializer_class = TicketSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsTicketOwner | IsAdminOrAssignedOperator,
+    ]
+    filterset_class = TicketFilter
+    search_fields = ('title', 'description')
+    ordering_fields = ('created_at', 'updated_at', 'priority', 'status')
+    ordering = ('-created_at',)
+
+    def get_queryset(self):
+        ...
