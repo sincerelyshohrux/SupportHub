@@ -129,6 +129,8 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'common.pagination.CustomPageNumberPagination',
+    'PAGE_SIZE': 10,
 }
 # Email (development uchun konsolga chiqaradi)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
