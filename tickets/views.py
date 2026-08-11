@@ -1,10 +1,15 @@
 from django.utils import timezone
 from rest_framework import permissions, viewsets
 
-from common.permissions import IsAdminOrReadOnly, IsTicketOwnerOrAssigned
+from common.permissions import (
+    IsAdminOrAssignedOperator,
+    IsAdminOrReadOnly,
+    IsTicketOwner,
+)
 
 from .models import Category, Ticket, TicketHistory
 from .serializers import CategorySerializer, TicketSerializer
+
 
 class CategoryViewSet(viewsets.ModelViewSet):
     """
@@ -19,7 +24,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
 
 
-
 class TicketViewSet(viewsets.ModelViewSet):
     """
     GET    /api/tickets/
@@ -29,7 +33,10 @@ class TicketViewSet(viewsets.ModelViewSet):
     DELETE /api/tickets/{id}/
     """
     serializer_class = TicketSerializer
-    permission_classes = [permissions.IsAuthenticated, IsTicketOwnerOrAssigned]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsTicketOwner | IsAdminOrAssignedOperator,
+    ]
 
     def get_queryset(self):
         user = self.request.user

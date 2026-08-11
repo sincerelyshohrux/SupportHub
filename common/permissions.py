@@ -12,10 +12,47 @@ class IsAdmin(BasePermission):
         )
 
 
+class IsOperator(BasePermission):
+    """Faqat operator rolidagi foydalanuvchilarga ruxsat beradi."""
+
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.role == 'operator'
+        )
+
+
+class IsTicketOwner(BasePermission):
+    """Ticket faqat o'sha ticketni yaratgan client'ga tegishli bo'lsa ruxsat beradi."""
+
+    def has_object_permission(self, request, view, obj):
+        return obj.client_id == request.user.id
+
+
+class IsAdminOrAssignedOperator(BasePermission):
+    """
+    Admin — har doim ruxsat.
+    Operator — faqat o'ziga biriktirilgan ticket bo'lsa ruxsat.
+    """
+
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.role in ('admin', 'operator')
+        )
+
+    def has_object_permission(self, request, view, obj):
+        if request.user.role == 'admin':
+            return True
+        return obj.operator_id == request.user.id
+
+
 class IsAdminOrReadOnly(BasePermission):
     """
     O'qish (GET) — barcha autentifikatsiyadan o'tgan foydalanuvchilarga.
-    Yozish (POST/PATCH/DELETE) — faqat admin'ga.
+    Yozish (POST/PATCH/DELETE) — faqat admin'ga. (Category uchun ishlatiladi)
     """
 
     def has_permission(self, request, view):
@@ -24,20 +61,3 @@ class IsAdminOrReadOnly(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return request.user.role == 'admin'
-
-
-
-class IsTicketOwnerOrAssigned(BasePermission):
-    """
-    - Admin: barcha ticketlarni ko'ra/o'zgartira oladi
-    - Operator: faqat o'ziga biriktirilgan ticketni
-    - Client: faqat o'zi yaratgan ticketni
-    """
-
-    def has_object_permission(self, request, view, obj):
-        user = request.user
-        if user.role == 'admin':
-            return True
-        if user.role == 'operator':
-            return obj.operator_id == user.id
-        return obj.client_id == user.id
