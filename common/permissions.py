@@ -24,3 +24,20 @@ class IsAdminOrReadOnly(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return request.user.role == 'admin'
+
+
+
+class IsTicketOwnerOrAssigned(BasePermission):
+    """
+    - Admin: barcha ticketlarni ko'ra/o'zgartira oladi
+    - Operator: faqat o'ziga biriktirilgan ticketni
+    - Client: faqat o'zi yaratgan ticketni
+    """
+
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        if user.role == 'admin':
+            return True
+        if user.role == 'operator':
+            return obj.operator_id == user.id
+        return obj.client_id == user.id
