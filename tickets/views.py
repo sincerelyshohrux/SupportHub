@@ -80,3 +80,38 @@ class TicketViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         ...
+
+
+
+from django.core.cache import cache
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+
+from common.permissions import IsAdmin
+
+
+@api_view(['GET'])
+@permission_classes([IsAdmin])
+def ticket_stats(request):
+    """
+    GET /api/tickets/stats/
+    Statistika 5 daqiqaga cache qilinadi.
+    """
+    stats = cache.get('ticket_stats')
+
+    if stats is None:
+        stats = {
+            'total': Ticket.objects.count(),
+            'new': Ticket.objects.filter(status=Ticket.Status.NEW).count(),
+            'in_progress': Ticket.objects.filter(status=Ticket.Status.IN_PROGRESS).count(),
+            'resolved': Ticket.objects.filter(status=Ticket.Status.RESOLVED).count(),
+            'closed': Ticket.objects.filter(status=Ticket.Status.CLOSED).count(),
+            'urgent': Ticket.objects.filter(priority=Ticket.Priority.URGENT).count(),
+            'cached': False,
+        }
+        cache.set('ticket_stats', stats, timeout=300)  # 5 daqiqa
+    else:
+        stats = dict(stats)
+        stats['cached'] = True
+
+    return Response(stats)
