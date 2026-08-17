@@ -1,5 +1,6 @@
 from django.utils import timezone
 from rest_framework import permissions, viewsets
+from .tasks import notify_urgent_ticket
 from .filters import TicketFilter
 from common.permissions import (
     IsAdminOrAssignedOperator,
@@ -49,7 +50,9 @@ class TicketViewSet(viewsets.ModelViewSet):
         return qs.filter(client=user)
 
     def perform_create(self, serializer):
-        serializer.save(client=self.request.user)
+        ticket = serializer.save(client=self.request.user)
+        if ticket.priority == Ticket.Priority.URGENT:
+            notify_urgent_ticket.delay(ticket.id)
 
     def perform_update(self, serializer):
         old_status = self.get_object().status
