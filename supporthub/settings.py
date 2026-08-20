@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'rest_framework',
 'rest_framework_simplejwt',
 'django_filters',
+'drf_spectacular',
 
     # local apps
     'common',
@@ -132,6 +133,12 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'common.pagination.CustomPageNumberPagination',
     'PAGE_SIZE': 10,
+
+}
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'SupportHub API',
+    'DESCRIPTION': 'Mijozlar murojaatlarini boshqarish tizimi',
+    'VERSION': '1.0.0',
 }
 # Email (development uchun konsolga chiqaradi)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -194,6 +201,6 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULE = {
     'check-stale-tickets-daily': {
         'task': 'tickets.tasks.check_stale_tickets',
-        'schedule': 86400.0,  
+        'schedule': 86400.0,
     },
 }
